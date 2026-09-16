@@ -11,3 +11,10 @@ def test_health() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_root() -> None:
+    response =client.get("/")
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "Issue Tracker API"}
