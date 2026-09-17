@@ -10,4 +10,3 @@ def health() -> dict[str, str]:
 @app.get("/")
 def root() -> dict[str,str]:
     return {"message": "Issue Tracker API"}
-
