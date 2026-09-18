@@ -1,0 +1,57 @@
+[1mdiff --git a/app/models.py b/app/models.py[m
+[1mindex ce6f520..ce3e5b0 100644[m
+[1m--- a/app/models.py[m
+[1m+++ b/app/models.py[m
+[36m@@ -5,4 +5,4 @@[m [mfrom dataclasses import dataclass[m
+ class Ticket:[m
+     id: int[m
+     title: str[m
+[31m-    status: str = "open"[m
+[32m+[m[32m    status: str = "Open"[m
+[1mdiff --git a/app/services.py b/app/services.py[m
+[1mindex 14ea7d0..bbc8659 100644[m
+[1m--- a/app/services.py[m
+[1m+++ b/app/services.py[m
+[36m@@ -7,3 +7,11 @@[m [mdef close_ticket(ticket: Ticket) -> Ticket:[m
+ [m
+     ticket.status = "Closed"[m
+     return ticket[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef reopen_ticket(ticket: Ticket) -> Ticket:[m
+[32m+[m[32m    if ticket.status == "Open":[m
+[32m+[m[32m        raise ValueError("Ticket is already opened")[m
+[32m+[m
+[32m+[m[32m    ticket.status = "Open"[m
+[32m+[m[32m    return ticket[m
+\ No newline at end of file[m
+[1mdiff --git a/app/tests/test_services.py b/app/tests/test_services.py[m
+[1mindex 3490e27..a97ad69 100644[m
+[1m--- a/app/tests/test_services.py[m
+[1m+++ b/app/tests/test_services.py[m
+[36m@@ -1,5 +1,6 @@[m
+ from app.models import Ticket[m
+ from app.services import close_ticket[m
+[32m+[m[32mfrom app.services import reopen_ticket[m
+ import pytest[m
+ [m
+ [m
+[36m@@ -16,3 +17,18 @@[m [mdef test_close_ticket_already_closed() -> None:[m
+ [m
+     with pytest.raises(ValueError):[m
+         close_ticket(ticket)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef test_reopen_ticket() -> None:[m
+[32m+[m[32m    ticket = Ticket(id=1, title='Bug', status="Closed")[m
+[32m+[m
+[32m+[m[32m    result = reopen_ticket(ticket)[m
+[32m+[m
+[32m+[m[32m    assert result.status == "Open"[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef test_cannot_reopen_ticket() -> None:[m
+[32m+[m[32m    ticket = Ticket(id=1, title='Bug', status="Open")[m
+[32m+[m
+[32m+[m[32m    with pytest.raises(ValueError):[m
+[32m+[m[32m        reopen_ticket(ticket)[m

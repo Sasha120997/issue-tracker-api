@@ -5,4 +5,4 @@ from dataclasses import dataclass
 class Ticket:
     id: int
     title: str
-    status: str = "open"
+    status: str = "Open"
