@@ -74,3 +74,52 @@ def test_get_project_404() -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Project not found"
+
+
+def test_update_project() -> None:
+    create_response = client.post(
+        "/projects",
+        json={
+            "name": "Original",
+            "description": "Keep this",
+        },
+    )
+
+    project = create_response.json()
+
+    response = client.patch(
+        f"/projects/{project['id']}",
+        json={
+            "name": "Updated",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["name"] == "Updated"
+    assert data["description"] == "Keep this"
+
+
+def test_delete_project() -> None:
+    create_response = client.post(
+        "/projects",
+        json={
+            "name": "Delete me",
+        },
+    )
+
+    project = create_response.json()
+
+    response = client.delete(
+        f"/projects/{project['id']}"
+    )
+
+    assert response.status_code == 204
+
+    get_response = client.get(
+        f"/projects/{project['id']}"
+    )
+
+    assert get_response.status_code == 404
