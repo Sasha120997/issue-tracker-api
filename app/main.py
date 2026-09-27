@@ -4,6 +4,8 @@ from app.schemas import ProjectResponse
 from app.schemas import ProjectUpdate
 from fastapi import HTTPException
 from fastapi import Response, status
+from app.schemas import TicketResponse
+from app.schemas import TicketCreate
 
 app = FastAPI()
 
@@ -18,8 +20,11 @@ def root() -> dict[str,str]:
     return {"message": "Issue Tracker API"}
 
 
-projects: list[dict]=[]
+projects: list[dict] = []
 next_project_id = 1
+
+tickets: list[dict] = []
+next_ticket_id = 1
 
 
 @app.post("/projects", response_model=ProjectResponse, status_code=201)
@@ -55,14 +60,12 @@ def get_project(project_id: int):
     )
 
 
-def find_project(projects: list[dict], project_id: int) -> dict | None:
+def find_project(project_id: int) -> dict | None:
     for project in projects:
-        if project['id'] == project_id:
+        if project["id"] == project_id:
             return project
 
-    raise HTTPException(
-        detail='Project not found'
-    )
+    return None
 
 
 @app.patch(
@@ -99,3 +102,65 @@ def delete_project(project_id: int):
         status_code=404,
         detail="Project not found",
     )
+
+
+@app.post(
+    "/tickets",
+    response_model=TicketResponse,
+    status_code=201,
+)
+def create_ticket(ticket: TicketCreate):
+    global next_ticket_id
+
+    project = find_project(ticket.project_id)
+
+    if project is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found",
+        )
+
+    new_ticket = {
+        "id": next_ticket_id,
+        "title": ticket.title,
+        "description": ticket.description,
+        "project_id": ticket.project_id,
+        "status": "open",
+    }
+
+    tickets.append(new_ticket)
+    next_ticket_id += 1
+
+    return new_ticket
+
+
+@app.get(
+    "/tickets",
+    response_model=list[TicketResponse],
+)
+def get_tickets():
+    return tickets
+
+
+def find_ticket(ticket_id: int) -> dict | None:
+    for ticket in tickets:
+        if ticket["id"] == ticket_id:
+            return ticket
+
+    return None
+
+
+@app.get(
+    "/tickets/{ticket_id}",
+    response_model=TicketResponse,
+)
+def get_ticket(ticket_id: int):
+    ticket = find_ticket(ticket_id)
+
+    if ticket is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Ticket not found",
+        )
+
+    return ticket

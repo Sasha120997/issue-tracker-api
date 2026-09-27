@@ -16,3 +16,17 @@ class ProjectResponse(BaseModel):
 class ProjectUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     description: str | None = None
+
+
+class TicketCreate(BaseModel):
+    title: str = Field(min_length=1, max_lenght=200)
+    description: str | None = None
+    project_id: int
+
+
+class TicketResponse(BaseModel):
+    id: int
+    title: str
+    description: str | None = None
+    project_id: int
+    status: str
