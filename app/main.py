@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from fastapi import Response, status
 from app.schemas import TicketResponse
 from app.schemas import TicketCreate
+from typing import Literal
 
 app = FastAPI()
 
@@ -138,8 +139,27 @@ def create_ticket(ticket: TicketCreate):
     "/tickets",
     response_model=list[TicketResponse],
 )
-def get_tickets():
-    return tickets
+def get_tickets(
+    status: Literal["open", "closed"] | None = None,
+    project_id: int | None = None,
+):
+    result = tickets
+
+    if status is not None:
+        result = [
+            ticket
+            for ticket in result
+            if ticket["status"] == status
+        ]
+
+    if project_id is not None:
+        result = [
+            ticket
+            for ticket in result
+            if ticket["project_id"] == project_id
+        ]
+
+    return result
 
 
 def find_ticket(ticket_id: int) -> dict | None:
@@ -162,5 +182,29 @@ def get_ticket(ticket_id: int):
             status_code=404,
             detail="Ticket not found",
         )
+
+    return ticket
+
+
+@app.patch(
+    "/tickets/{ticket_id}/close",
+    response_model=TicketResponse,
+)
+def close_ticket(ticket_id: int):
+    ticket = find_ticket(ticket_id)
+
+    if ticket is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Ticket not found",
+        )
+
+    if ticket["status"] == "closed":
+        raise HTTPException(
+            status_code=400,
+            detail="Ticket is already closed",
+        )
+
+    ticket["status"] = "closed"
 
     return ticket

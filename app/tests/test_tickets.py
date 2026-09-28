@@ -35,3 +35,37 @@ def test_create_ticket() -> None:
     assert data["project_id"] == project["id"]
     assert data["status"] == "open"
     assert "id" in data
+
+
+def test_filter_tickets_by_project() -> None:
+    project_a = create_test_project()
+    project_b = create_test_project()
+
+    client.post(
+        "/tickets",
+        json={
+            "title": "Ticket A",
+            "project_id": project_a["id"],
+        },
+    )
+
+    client.post(
+        "/tickets",
+        json={
+            "title": "Ticket B",
+            "project_id": project_b["id"],
+        },
+    )
+
+    response = client.get(
+        f"/tickets?project_id={project_a['id']}"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert all(
+        ticket["project_id"] == project_a["id"]
+        for ticket in data
+    )
